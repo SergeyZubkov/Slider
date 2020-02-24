@@ -3,11 +3,100 @@
 <head>
 	<meta charset="UTF-8">
 	<title>Slider</title>
+	<style>
+		body, html {
+			height: 100%;
+		}
+		body {
+			display: flex;
+			justify-content: center;
+			align-items: center;
+		}
+		.slider {
+			width: 700px;
+			position: relative;
+		}
+		.slider__line {
+			display: flex;
+			position: relative;
+
+		}
+		.slider img {
+
+		}
+		.slider__btn {
+			position: absolute;
+			top: 50%;
+			margin: -25px 10px 0;
+			font-size: 50px;
+			text-shadow: 0 0 2px #000;
+			color: #fff;
+			cursor: pointer;
+			opacity: .7;
+			transition: .4s;
+		}
+		.slider__btn:hover {
+			opacity: 1;
+		}
+		.slider__btn_left {
+			left: 0;
+		}
+		.slider__btn_right {
+			right: 0;
+		}
+	</style>
 </head>
 <body>
+	<div class="slider">
+		<div class="slider__line">
+			<img src="https://spiritualunite-8df5.kxcdn.com/articles/wp-content/uploads/2019/07/Black-Cat-in-a-Dream-Meaning-and-Symbolism-700x400.jpg" alt="">
+			<img src="https://i0.wp.com/www.epochtimes.ru/eet-content/uploads/2019/03/china-chinchilla-1974957_960_720-700x400-700x400.jpg" alt="">
+			<img src="https://cdn4.i-scmp.com/sites/default/files/styles/700x400/public/images/methode/2019/02/25/1af4e82a-38dd-11e9-a334-8d034d5595df_image_hires_172035.JPG?itok=91DBidXa&v=1551086437" alt="">
+		</div>
+		<div class="slider__btn slider__btn_left">
+			<
+		</div>
+		<div class="slider__btn slider__btn_right">
+			>
+		</div>
+	</div>
 	<script>
-		let a = 'work';
-		console.log(a)
+		/*
+			долго тупил над тем, что scrollWidth выдавал неправильное значение. Причина оказалась в том, что картинки были еще не загруженны,
+			и поэтому ширина элм.,который их содержит, была такой, какую выдавало свойство scrollWidth
+		*/
+		window.addEventListener('load', () => {
+			let sliderLine = document.querySelector('.slider__line');
+			let sliderLineWidth = parseInt(sliderLine.scrollWidth);
+			console.log(sliderLineWidth)
+			let sliderBtnLeft = document.querySelector('.slider__btn_left');
+			let sliderBtnRight = document.querySelector('.slider__btn_right');
+
+			sliderBtnLeft.addEventListener('click', moveLeft);
+			sliderBtnRight.addEventListener('click', moveRight);
+
+			function moveLeft(e) {
+						let sliderLineWidth = parseInt(sliderLine.scrollWidth);
+			console.log(sliderLineWidth)
+				let sliderLineLeftOffset = parseInt(getComputedStyle(sliderLine).left);
+				let newVaule = sliderLineLeftOffset - 700;
+
+				if (Math.abs(newVaule) === sliderLineWidth) return;
+
+				sliderLine.style.left = newVaule + 'px';
+			}
+
+			function moveRight(e) {
+						let sliderLineWidth = parseInt(sliderLine.scrollWidth);
+			console.log(sliderLineWidth)
+				let sliderLineLeftOffset = parseInt(getComputedStyle(sliderLine).left);
+				let newVaule = sliderLineLeftOffset + 700;
+		
+				if (newVaule > 0) return;
+
+				sliderLine.style.left = newVaule + 'px';
+			}
+		})
 	</script>
 </body>
 </html>
