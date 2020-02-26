@@ -14,7 +14,9 @@
 		}
 		.slider {
 			width: 700px;
+			height: 400px;	
 			position: relative;
+			overflow: hidden;
 		}
 		.slider__line {
 			display: flex;
@@ -44,6 +46,27 @@
 		.slider__btn_right {
 			right: 0;
 		}
+		.slider__indicators {
+			display: flex;
+			justify-content: center;
+			position: absolute;
+			bottom: 20px;
+			right: 0; 
+			left: 0;
+			z-index: 1;
+		}
+		.slider__indicator {
+			height: 10px;
+			width: 10px;
+			background: #fff;
+			border-radius: 50%;
+			margin: 5px;	
+			cursor: pointer;
+			opacity: .4;
+		}
+		.slider__indicator_active {
+			opacity: 1;
+		}
 	</style>
 </head>
 <body>
@@ -59,11 +82,27 @@
 		<div class="slider__btn slider__btn_right">
 			>
 		</div>
+		<div class="slider__indicators"></div>
 	</div>
 	<script>
 		/*
-			долго тупил над тем, что scrollWidth выдавал неправильное значение. Причина оказалась в том, что картинки были еще не загруженны,
-			и поэтому ширина элм.,который их содержит, была такой, какую выдавало свойство scrollWidth
+			долго тупил над тем, что scrollWidth выдавал неправильное значение. Причина оказалась в том, что не все картинки были загружены,
+			и поэтому ширина элм.,который их содержал, была такой, какую выдавало свойство scrollWidth.
+
+			1) Вешаем на кнопку "влево" слушателя события "click", который будет запускать фун. moveLeft каждый раз на данное событие
+			2) Фун. moveLeft у элм. slider-line отнимает его текущее значение свойства left. (которое мы получаем не через свойство .style элм.,- так как
+			этим способом мы считываем стили, которые заданы у элементы в HTML, в атрибуте style - а с помощью метода getComputedStyle(elm).нужноеСвойство)
+				Чтобы движение останавливалось на последнем слайде, мы проверяем новое значение свойста left на равенство с шириной slider-line.
+			3) Движение вправо осуществляется по описанным двум шагам как и движение влево, только происходит прибавление ширины слайда к свойству left и изменяется условие 
+				проверки на остановку движения при последнем слайде.
+
+			-----Индикаторы---------------------------------------------------
+			1) Написать разметку
+			2) Спозиционировать
+			3) Оформить
+
+			1) Показать активность слайда
+			2) При клике промотать на нужный слайд
 		*/
 		window.addEventListener('load', () => {
 			let sliderLine = document.querySelector('.slider__line');
@@ -71,31 +110,75 @@
 			console.log(sliderLineWidth)
 			let sliderBtnLeft = document.querySelector('.slider__btn_left');
 			let sliderBtnRight = document.querySelector('.slider__btn_right');
+			let slides = sliderLine.querySelectorAll('img');
+			let sliderIndicatorsContainer = document.querySelector('.slider__indicators');
+			let currentSlide = 0;
+			let indicators = null; //задается indicatorsInit()
 
-			sliderBtnLeft.addEventListener('click', moveLeft);
-			sliderBtnRight.addEventListener('click', moveRight);
+			sliderBtnLeft.addEventListener('click', () => moveLeft(1));
+			sliderBtnRight.addEventListener('click', () => moveRight(1));
+			sliderIndicatorsContainer.addEventListener('click', moveToSlide)
 
-			function moveLeft(e) {
+			function moveLeft(steps) {
 						let sliderLineWidth = parseInt(sliderLine.scrollWidth);
 			console.log(sliderLineWidth)
 				let sliderLineLeftOffset = parseInt(getComputedStyle(sliderLine).left);
-				let newVaule = sliderLineLeftOffset - 700;
+				let newVaule = sliderLineLeftOffset - steps * 700;
 
 				if (Math.abs(newVaule) === sliderLineWidth) return;
 
 				sliderLine.style.left = newVaule + 'px';
+				changeActiveIndicator(currentSlide+steps);
 			}
 
-			function moveRight(e) {
-						let sliderLineWidth = parseInt(sliderLine.scrollWidth);
+			function moveRight(steps) {
+				let sliderLineWidth = parseInt(sliderLine.scrollWidth);
 			console.log(sliderLineWidth)
 				let sliderLineLeftOffset = parseInt(getComputedStyle(sliderLine).left);
-				let newVaule = sliderLineLeftOffset + 700;
+				let newVaule = sliderLineLeftOffset + steps * 700;
 		
 				if (newVaule > 0) return;
 
 				sliderLine.style.left = newVaule + 'px';
+				changeActiveIndicator(currentSlide-steps)
 			}
+
+			function moveToSlide(e) {
+				if (!e.target.classList.contains('slider__indicator')) return
+				let selectedSlide = e.target.dataset.slide;
+				
+				if (currentSlide < selectedSlide) {
+					moveLeft(selectedSlide - currentSlide)
+				} else {
+					moveRight(currentSlide - selectedSlide)
+				}
+			}
+
+			function changeActiveIndicator(newCurrentSlide) {
+				currentSlide = newCurrentSlide;
+	
+				sliderIndicatorsContainer
+				.querySelector('.slider__indicator_active')
+				.classList.remove('slider__indicator_active');
+				console.log(sliderIndicatorsContainer)
+				indicators[currentSlide].classList.add('slider__indicator_active');
+			}
+
+			function indicatorsInit() {
+				slides.forEach((slide, i) => {
+					let indicator = document.createElement('div');
+					indicator.classList.add('slider__indicator');
+					indicator.dataset.slide = i;
+					
+					if (i === 0) indicator.classList.add('slider__indicator_active');
+
+					sliderIndicatorsContainer.appendChild(indicator)
+				})
+
+				indicators = sliderIndicatorsContainer.querySelectorAll('.slider__indicator');
+			}
+
+			indicatorsInit();
 		})
 	</script>
 </body>
